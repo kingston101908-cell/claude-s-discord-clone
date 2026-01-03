@@ -1,23 +1,5 @@
 import { supabase } from './client';
 
-// Sign in with Google
-export async function signInWithGoogle() {
-    try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin
-            }
-        });
-
-        if (error) throw error;
-        return { data, error: null };
-    } catch (error) {
-        console.error('Sign in error:', error);
-        return { data: null, error: error.message };
-    }
-}
-
 // Sign up with email and password
 export async function signUpWithEmail(email, password) {
     try {
@@ -25,7 +7,6 @@ export async function signUpWithEmail(email, password) {
             email,
             password,
             options: {
-                // Skip email confirmation
                 emailRedirectTo: window.location.origin
             }
         });
