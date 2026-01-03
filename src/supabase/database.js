@@ -42,6 +42,9 @@ export function subscribeToServers(userId, callback) {
 
 // Create a new server
 export async function createServer(name, icon, userId, userName) {
+    // Generate an invite code
+    const inviteCode = generateInviteCode();
+
     const { data: server, error } = await supabase
         .from('servers')
         .insert({
@@ -54,7 +57,8 @@ export async function createServer(name, icon, userId, userName) {
                     username: userName,
                     joined_at: new Date().toISOString()
                 }
-            }
+            },
+            invite_code: inviteCode
         })
         .select()
         .single();
@@ -68,6 +72,72 @@ export async function createServer(name, icon, userId, userName) {
     await createChannel(server.id, 'general', 'Text Channels');
 
     return server.id;
+}
+
+// Get server by invite code
+export async function getServerByInviteCode(inviteCode) {
+    const { data, error } = await supabase
+        .from('servers')
+        .select('*')
+        .eq('invite_code', inviteCode)
+        .single();
+
+    if (error) {
+        console.error('Error fetching server by invite:', error);
+        return null;
+    }
+    return data;
+}
+
+// Join a server
+export async function joinServer(serverId, userId, userName) {
+    // First get current server data
+    const { data: server, error: fetchError } = await supabase
+        .from('servers')
+        .select('members, member_details')
+        .eq('id', serverId)
+        .single();
+
+    if (fetchError || !server) {
+        console.error('Error fetching server:', fetchError);
+        return false;
+    }
+
+    // Check if already a member
+    if (server.members.includes(userId)) {
+        return true; // Already a member
+    }
+
+    // Add user to members
+    const { error } = await supabase
+        .from('servers')
+        .update({
+            members: [...server.members, userId],
+            member_details: {
+                ...server.member_details,
+                [userId]: {
+                    username: userName,
+                    joined_at: new Date().toISOString()
+                }
+            }
+        })
+        .eq('id', serverId);
+
+    if (error) {
+        console.error('Error joining server:', error);
+        return false;
+    }
+    return true;
+}
+
+// Generate invite code
+function generateInviteCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
 }
 
 // ============ CHANNELS ============
@@ -199,4 +269,37 @@ export async function sendMessage(channelId, content, user) {
     if (error) {
         console.error('Error sending message:', error);
     }
+}
+
+// ============ USER PROFILES ============
+
+// Get user profile
+export async function getUserProfile(userId) {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching profile:', error);
+    }
+    return data;
+}
+
+// Create or update user profile
+export async function upsertUserProfile(userId, profile) {
+    const { error } = await supabase
+        .from('profiles')
+        .upsert({
+            id: userId,
+            ...profile,
+            updated_at: new Date().toISOString()
+        });
+
+    if (error) {
+        console.error('Error upserting profile:', error);
+        return false;
+    }
+    return true;
 }

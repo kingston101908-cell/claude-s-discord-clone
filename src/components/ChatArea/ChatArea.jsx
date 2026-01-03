@@ -1,12 +1,25 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../../context/AppContext'
 import Message from '../Message/Message'
-import { Hash, Users, Pin, Bell, Search, Inbox, PlusCircle, Gift, Sticker, Smile, Send } from 'lucide-react'
+import UserProfileModal from '../UserProfileModal/UserProfileModal'
+import { Hash, Users, Bell, Pin, Search, Inbox, HelpCircle, PlusCircle, Gift, ImagePlus, Smile, Send } from 'lucide-react'
 import './ChatArea.css'
 
+function QuestionCircle(props) {
+    return <HelpCircle {...props} />
+}
+
 function ChatArea({ onToggleMemberList, showMemberList }) {
-    const { activeChannel, activeMessages, activeChannelId, sendMessage } = useApp()
+    const {
+        activeChannel,
+        activeChannelId,
+        activeServer,
+        activeMessages,
+        sendMessage
+    } = useApp()
+
     const [messageInput, setMessageInput] = useState('')
+    const [selectedAuthor, setSelectedAuthor] = useState(null)
     const messagesEndRef = useRef(null)
 
     // Auto-scroll to bottom when new messages arrive
@@ -28,128 +41,145 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
         }
     }
 
+    const handleAuthorClick = (author) => {
+        setSelectedAuthor(author)
+    }
+
     if (!activeChannel) {
         return (
-            <div className="chat-area empty">
-                <div className="empty-state">
-                    <Hash size={72} strokeWidth={1.5} />
+            <div className="chat-area">
+                <div className="chat-empty">
+                    <div className="empty-icon">💬</div>
                     <h3>Select a channel</h3>
-                    <p>Pick a channel from the list to start chatting</p>
+                    <p>Choose a channel from the sidebar to start chatting</p>
                 </div>
             </div>
         )
     }
 
+    // Check if messages are from the same author (for grouping)
+    const shouldShowHeader = (message, index) => {
+        if (index === 0) return true
+        const prevMessage = activeMessages[index - 1]
+        if (prevMessage.author?.id !== message.author?.id) return true
+
+        // Show header if more than 5 minutes between messages
+        const prevTime = new Date(prevMessage.timestamp)
+        const currTime = new Date(message.timestamp)
+        return (currTime - prevTime) > 5 * 60 * 1000
+    }
+
+    const memberCount = activeServer?.members?.length || 0
+
     return (
-        <div className="chat-area">
-            {/* Chat Header */}
-            <div className="chat-header">
-                <div className="chat-header-left">
+        <main className="chat-area">
+            {/* Channel Header */}
+            <header className="chat-header">
+                <div className="header-left">
                     <Hash size={24} className="header-hash" />
-                    <h2 className="header-channel-name">{activeChannel.name}</h2>
-                    <div className="header-divider"></div>
-                    <span className="header-topic">Welcome to #{activeChannel.name}!</span>
+                    <h2 className="header-title">{activeChannel.name}</h2>
                 </div>
-                <div className="chat-header-right">
+
+                <div className="header-right">
                     <button className="header-icon-btn" title="Pinned Messages">
-                        <Pin size={24} />
+                        <Pin size={20} />
                     </button>
                     <button className="header-icon-btn" title="Notification Settings">
-                        <Bell size={24} />
+                        <Bell size={20} />
                     </button>
                     <button
-                        className={`header-icon-btn ${showMemberList ? 'active' : ''}`}
+                        className={`header-icon-btn member-count-btn ${showMemberList ? 'active' : ''}`}
                         onClick={onToggleMemberList}
                         title="Member List"
                     >
-                        <Users size={24} />
+                        <Users size={20} />
+                        <span className="member-count">{memberCount}</span>
                     </button>
+
                     <div className="header-search">
                         <input type="text" placeholder="Search" />
                         <Search size={16} className="search-icon" />
                     </div>
+
                     <button className="header-icon-btn" title="Inbox">
-                        <Inbox size={24} />
+                        <Inbox size={20} />
                     </button>
                     <button className="header-icon-btn" title="Help">
-                        <QuestionCircle size={24} />
+                        <QuestionCircle size={20} />
                     </button>
                 </div>
-            </div>
+            </header>
 
-            {/* Messages Container */}
-            <div className="messages-container">
-                <div className="messages-scroller">
-                    {/* Welcome Message */}
-                    <div className="channel-welcome">
-                        <div className="welcome-icon">
-                            <Hash size={68} strokeWidth={1.5} />
-                        </div>
-                        <h1>Welcome to #{activeChannel.name}!</h1>
-                        <p>This is the start of the #{activeChannel.name} channel.</p>
+            {/* Messages */}
+            <div className="chat-messages">
+                {/* Channel Welcome */}
+                <div className="channel-welcome">
+                    <div className="welcome-icon">
+                        <Hash size={42} />
                     </div>
-
-                    {/* Messages */}
-                    {activeMessages.map((message, index) => (
-                        <Message
-                            key={message.id}
-                            message={message}
-                            showHeader={index === 0 || activeMessages[index - 1]?.author?.id !== message.author?.id}
-                        />
-                    ))}
-                    <div ref={messagesEndRef} />
+                    <h1>Welcome to #{activeChannel.name}!</h1>
+                    <p>This is the start of the #{activeChannel.name} channel.</p>
                 </div>
+
+                {/* Message List */}
+                {activeMessages.map((message, index) => (
+                    <Message
+                        key={message.id}
+                        message={message}
+                        showHeader={shouldShowHeader(message, index)}
+                        onAuthorClick={() => handleAuthorClick(message.author)}
+                    />
+                ))}
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Message Input */}
-            <div className="message-input-container">
-                <div className="message-input-wrapper">
-                    <button className="input-icon-btn" title="Upload File">
+            <div className="chat-input-container">
+                <div className="chat-input-wrapper">
+                    <button className="input-icon-btn" title="Upload files">
                         <PlusCircle size={24} />
                     </button>
-                    <div className="input-field">
-                        <input
-                            type="text"
-                            value={messageInput}
-                            onChange={(e) => setMessageInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder={`Message #${activeChannel.name}`}
-                        />
-                    </div>
+
+                    <input
+                        type="text"
+                        value={messageInput}
+                        onChange={(e) => setMessageInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={`Message #${activeChannel.name}`}
+                    />
+
                     <div className="input-actions">
-                        <button className="input-icon-btn" title="Send Gift">
+                        <button className="input-icon-btn" title="Gift Nitro">
                             <Gift size={24} />
                         </button>
-                        <button className="input-icon-btn" title="GIF">
-                            <Sticker size={24} />
+                        <button className="input-icon-btn" title="Upload Image">
+                            <ImagePlus size={24} />
                         </button>
                         <button className="input-icon-btn" title="Emoji">
                             <Smile size={24} />
                         </button>
-                        {messageInput.trim() && (
-                            <button
-                                className="send-btn"
-                                onClick={handleSendMessage}
-                                title="Send Message"
-                            >
-                                <Send size={20} />
-                            </button>
-                        )}
+                        <button
+                            className="input-icon-btn send-btn"
+                            title="Send"
+                            onClick={handleSendMessage}
+                            disabled={!messageInput.trim()}
+                        >
+                            <Send size={24} />
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    )
-}
 
-// QuestionCircle component (not in lucide)
-function QuestionCircle({ size = 24, ...props }) {
-    return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
+            {/* User Profile Modal */}
+            {selectedAuthor && (
+                <UserProfileModal
+                    userId={selectedAuthor.id}
+                    username={selectedAuthor.username}
+                    photoURL={selectedAuthor.photoURL}
+                    onClose={() => setSelectedAuthor(null)}
+                />
+            )}
+        </main>
     )
 }
 

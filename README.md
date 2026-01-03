@@ -1,37 +1,31 @@
 # Discord Clone
 
-A real-time Discord clone with user authentication and persistent data. Built with React + Supabase.
-
-![Discord Clone](https://img.shields.io/badge/React-18-blue) ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20Database-green) ![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)
+A real-time Discord clone with user authentication, servers, channels, and invite links. Built with React + Supabase.
 
 ## Features
 
-- 🔐 **Google Authentication** - Sign in with your Google account
-- 🏠 **Servers** - Create and join servers with custom emoji icons
-- 💬 **Channels** - Organize conversations in text channels
-- ⚡ **Real-time Messaging** - Messages sync instantly across all users
-- 👥 **Member List** - See who's in each server
-- 🌐 **Fully Deployed** - Runs on Vercel with Supabase backend
+- 🔐 **Authentication** - Email/password signup and login
+- 🏠 **Servers** - Create servers with custom emoji icons
+- 💬 **Channels** - Create text channels in servers
+- ⚡ **Real-time Messaging** - Messages sync instantly
+- 👥 **Member List** - Click members to view profiles
+- 🔗 **Invite Links** - Share links to invite others
+- 👤 **User Profiles** - Banner, bio, and about me sections
 
 ## Quick Start
 
 ### 1. Clone & Install
 
 ```bash
-git clone <your-repo-url>
-cd claude-discord-clone
+git clone https://github.com/kingston101908-cell/claude-s-discord-clone.git
+cd claude-s-discord-clone
 npm install
 ```
 
-### 2. Set Up Supabase (Free)
+### 2. Set Up Supabase
 
-1. Go to [supabase.com](https://supabase.com) and create a free account
-2. Click **New Project** → Choose a name and password → **Create**
-3. Wait for the project to be ready (~2 minutes)
-
-#### Create Database Tables
-
-Go to **SQL Editor** and run this:
+1. Go to [supabase.com](https://supabase.com) → Create project
+2. Go to **SQL Editor** and run:
 
 ```sql
 -- Servers table
@@ -42,6 +36,7 @@ create table servers (
   owner_id uuid not null,
   members uuid[] default '{}',
   member_details jsonb default '{}',
+  invite_code text unique,
   created_at timestamp with time zone default now()
 );
 
@@ -64,32 +59,35 @@ create table messages (
   created_at timestamp with time zone default now()
 );
 
+-- User profiles table
+create table profiles (
+  id uuid primary key,
+  username text,
+  bio text,
+  banner_url text,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
 -- Enable Row Level Security
 alter table servers enable row level security;
 alter table channels enable row level security;
 alter table messages enable row level security;
+alter table profiles enable row level security;
 
--- Policies (allow authenticated users)
-create policy "Users can view servers they're members of" on servers
-  for select using (auth.uid() = any(members));
+-- Policies
+create policy "Users can view servers" on servers for select using (true);
+create policy "Users can create servers" on servers for insert with check (auth.uid() = owner_id);
+create policy "Users can update servers" on servers for update using (auth.uid() = any(members));
 
-create policy "Users can create servers" on servers
-  for insert with check (auth.uid() = owner_id);
+create policy "Users can view channels" on channels for select using (true);
+create policy "Users can create channels" on channels for insert with check (true);
 
-create policy "Users can update servers they're members of" on servers
-  for update using (auth.uid() = any(members));
+create policy "Users can view messages" on messages for select using (true);
+create policy "Users can send messages" on messages for insert with check (auth.uid() is not null);
 
-create policy "Users can view channels" on channels
-  for select using (true);
-
-create policy "Users can create channels" on channels
-  for insert with check (true);
-
-create policy "Users can view messages" on messages
-  for select using (true);
-
-create policy "Users can send messages" on messages
-  for insert with check (auth.uid() is not null);
+create policy "Users can view profiles" on profiles for select using (true);
+create policy "Users can update own profile" on profiles for all using (auth.uid() = id);
 
 -- Enable realtime
 alter publication supabase_realtime add table servers;
@@ -97,95 +95,41 @@ alter publication supabase_realtime add table channels;
 alter publication supabase_realtime add table messages;
 ```
 
-#### Enable Google Auth
-
-1. Go to **Authentication** → **Providers** → **Google**
-2. Toggle **Enable**
-3. Add your Google OAuth credentials (or use Supabase's for testing)
-4. **Save**
-
-#### Get API Keys
-
-1. Go to **Settings** → **API**
-2. Copy the **Project URL** and **anon public** key
+3. Go to **Authentication** → **Providers** → **Email** → Turn OFF "Confirm email"
+4. Go to **Settings** → **API** → Copy URL and anon key
 
 ### 3. Configure Environment
 
-Create `.env.local` in the project root:
-
-```env
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
+Create `.env.local`:
+```
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=your-key
 ```
 
-### 4. Run Locally
+### 4. Run
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
-
-## Deploy to Vercel (Free)
-
-### Option A: One-Click Deploy
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-1. Import your GitHub repository
-2. Add environment variables (same as `.env.local`)
-3. Deploy!
-
-### Option B: CLI Deploy
+## Deploy to Vercel
 
 ```bash
-# Install Vercel CLI
 npm i -g vercel
-
-# Deploy (follow prompts)
-vercel
-
-# Deploy to production
 vercel --prod
 ```
 
-**Important:** After deploying, add your Vercel URL to Supabase:
-1. Supabase Dashboard → Authentication → URL Configuration
-2. Add your `https://your-app.vercel.app` to **Site URL** and **Redirect URLs**
+Add environment variables in Vercel Dashboard → Settings → Environment Variables.
 
-## Project Structure
+Add your Vercel URL to Supabase → Authentication → URL Configuration → Redirect URLs.
 
-```
-src/
-├── components/
-│   ├── Auth/           # Login page
-│   ├── ServerSidebar/  # Server list
-│   ├── ChannelSidebar/ # Channels + user panel
-│   ├── ChatArea/       # Messages + input
-│   ├── MemberList/     # Online members
-│   ├── Message/        # Chat message
-│   └── Modal/          # Create server/channel
-├── context/
-│   └── AppContext.jsx  # Global state + Supabase subscriptions
-├── supabase/
-│   ├── client.js       # Supabase initialization
-│   ├── auth.js         # Authentication helpers
-│   └── database.js     # Database operations
-└── App.jsx             # Main app with auth routing
-```
+## Invite Links
+
+Share invite links like: `https://your-app.vercel.app/invite/ABC123`
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18 + Vite |
-| Styling | Vanilla CSS |
-| Auth | Supabase Auth |
-| Database | Supabase (PostgreSQL) |
-| Realtime | Supabase Realtime |
-| Hosting | Vercel |
-| Icons | Lucide React |
-
-## License
-
-MIT
+- React 18 + Vite
+- Supabase (Auth + PostgreSQL + Realtime)
+- Vercel (Hosting)
+- Lucide React (Icons)

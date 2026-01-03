@@ -1,0 +1,113 @@
+.invite-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn var(--transition-normal);
+}
+
+.invite-modal {
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: var(--elevation-high);
+    position: relative;
+    animation: scaleIn var(--transition-normal);
+}
+
+.invite-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--interactive-normal);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast);
+}
+
+.invite-close:hover {
+    color: var(--interactive-hover);
+}
+
+.invite-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.invite-server-icon {
+    font-size: 32px;
+}
+
+.invite-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--header-primary);
+}
+
+.invite-description {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.invite-link-container {
+    display: flex;
+    gap: 8px;
+}
+
+.invite-link-input {
+    flex: 1;
+    padding: 10px 12px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-normal);
+    font-family: var(--font-code);
+}
+
+.invite-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background-color: var(--brand-primary);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    min-width: 100px;
+    justify-content: center;
+}
+
+.invite-copy-btn:hover {
+    background-color: var(--brand-primary-hover);
+}
+
+.invite-copy-btn.copied {
+    background-color: var(--status-positive);
+}
+
+.invite-info {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--divider-color);
+}
+
+.invite-info p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 6px;
+}

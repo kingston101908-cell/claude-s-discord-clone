@@ -1,0 +1,114 @@
+.join-server-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #5865f2 0%, #7289da 50%, #99aab5 100%);
+    padding: 20px;
+}
+
+.join-server-card {
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--elevation-high);
+    text-align: center;
+    animation: scaleIn var(--transition-normal);
+}
+
+.join-invited-text {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 20px;
+}
+
+.join-server-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.join-server-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--header-primary);
+    margin-bottom: 12px;
+}
+
+.join-server-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--status-offline);
+}
+
+.stat-dot.online {
+    background-color: var(--status-online);
+}
+
+.join-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.join-btn {
+    width: 100%;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.join-btn.primary {
+    background-color: var(--brand-primary);
+    color: white;
+}
+
+.join-btn.primary:hover:not(:disabled) {
+    background-color: var(--brand-primary-hover);
+}
+
+.join-btn.primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.join-btn.secondary {
+    background-color: transparent;
+    color: var(--text-normal);
+}
+
+.join-btn.secondary:hover {
+    text-decoration: underline;
+}
+
+.join-loading {
+    color: var(--text-muted);
+    padding: 40px 0;
+}
+
+.join-error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}

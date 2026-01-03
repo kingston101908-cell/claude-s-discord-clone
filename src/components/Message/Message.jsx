@@ -1,6 +1,6 @@
 import './Message.css'
 
-function Message({ message, showHeader }) {
+function Message({ message, showHeader, onAuthorClick }) {
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return 'Just now'
 
@@ -35,13 +35,7 @@ function Message({ message, showHeader }) {
     // Generate consistent color for username
     const getUserColor = (username) => {
         const colors = [
-            '#f23f43', // red
-            '#f0b232', // orange  
-            '#23a55a', // green
-            '#00a8fc', // blue
-            '#5865f2', // blurple
-            '#eb459f', // pink
-            '#fee75c', // yellow
+            '#f23f43', '#f0b232', '#23a55a', '#00a8fc', '#5865f2', '#eb459f', '#fee75c'
         ]
         const hash = (username || 'User').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
         return colors[hash % colors.length]
@@ -54,7 +48,7 @@ function Message({ message, showHeader }) {
         <div className={`message ${showHeader ? 'has-header' : 'compact'}`}>
             {showHeader ? (
                 <>
-                    <div className="message-avatar">
+                    <div className="message-avatar" onClick={onAuthorClick}>
                         {photoURL ? (
                             <img src={photoURL} alt={username} className="avatar-img" />
                         ) : (
@@ -73,6 +67,7 @@ function Message({ message, showHeader }) {
                             <span
                                 className="message-author"
                                 style={{ color: getUserColor(username) }}
+                                onClick={onAuthorClick}
                             >
                                 {username}
                             </span>
