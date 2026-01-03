@@ -15,22 +15,35 @@ function App() {
   const [modalConfig, setModalConfig] = useState(null)
   const [inviteCode, setInviteCode] = useState(null)
 
-  // Check for invite code in URL
+  // Check for invite code in URL on mount and when user changes
   useEffect(() => {
-    const path = window.location.pathname
-    if (path.startsWith('/invite/')) {
-      const code = path.replace('/invite/', '')
-      if (code) {
-        setInviteCode(code)
+    const checkInviteCode = () => {
+      const path = window.location.pathname
+      if (path.startsWith('/invite/')) {
+        const code = path.replace('/invite/', '')
+        if (code && code.length > 0) {
+          setInviteCode(code)
+          // Store in sessionStorage so it persists through login
+          sessionStorage.setItem('pendingInvite', code)
+        }
+      } else {
+        // Check if there's a pending invite after login
+        const pending = sessionStorage.getItem('pendingInvite')
+        if (pending && user) {
+          setInviteCode(pending)
+        }
       }
     }
-  }, [])
+
+    checkInviteCode()
+  }, [user])
 
   const openModal = (config) => setModalConfig(config)
   const closeModal = () => setModalConfig(null)
 
   const handleJoinedServer = (serverId) => {
     setInviteCode(null)
+    sessionStorage.removeItem('pendingInvite')
     // Clear the URL
     window.history.pushState({}, '', '/')
     // Select the joined server
@@ -39,6 +52,7 @@ function App() {
 
   const handleCancelJoin = () => {
     setInviteCode(null)
+    sessionStorage.removeItem('pendingInvite')
     window.history.pushState({}, '', '/')
   }
 
@@ -56,8 +70,7 @@ function App() {
 
   // Show auth page if not logged in
   if (!user) {
-    // If there's an invite code, still show auth but remember the invite
-    return <AuthPage />
+    return <AuthPage inviteCode={inviteCode} />
   }
 
   // Show join server page if there's an invite code

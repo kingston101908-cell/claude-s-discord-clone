@@ -3,7 +3,7 @@ import { signInWithEmail, signUpWithEmail } from '../../supabase/auth';
 import { isConfigured } from '../../supabase/client';
 import './AuthPage.css';
 
-function AuthPage() {
+function AuthPage({ inviteCode }) {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -42,6 +42,12 @@ function AuthPage() {
                         />
                     </svg>
                 </div>
+
+                {inviteCode && (
+                    <div className="auth-invite-notice">
+                        🎉 You've been invited to join a server! Log in or sign up to accept.
+                    </div>
+                )}
 
                 <h1>{isLogin ? 'Welcome back!' : 'Create an account'}</h1>
                 <p className="auth-subtitle">

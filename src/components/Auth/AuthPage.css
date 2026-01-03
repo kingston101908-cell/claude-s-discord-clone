@@ -28,6 +28,16 @@
   height: auto;
 }
 
+.auth-invite-notice {
+  background: linear-gradient(135deg, var(--brand-primary), #7289da);
+  color: white;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .auth-container h1 {
   font-size: 24px;
   font-weight: 700;
