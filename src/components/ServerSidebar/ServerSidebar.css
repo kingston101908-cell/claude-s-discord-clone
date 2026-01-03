@@ -1,0 +1,145 @@
+.server-sidebar {
+    width: var(--server-sidebar-width);
+    min-width: var(--server-sidebar-width);
+    background-color: var(--bg-tertiary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.server-sidebar::-webkit-scrollbar {
+    width: 0;
+}
+
+.server-sidebar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.server-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        border-radius var(--transition-normal),
+        background-color var(--transition-normal),
+        transform var(--transition-fast);
+    color: var(--status-positive);
+    overflow: hidden;
+}
+
+.server-icon:hover {
+    border-radius: 16px;
+    background-color: var(--brand-primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+.server-icon.active {
+    border-radius: 16px;
+    background-color: var(--brand-primary);
+    color: white;
+}
+
+.server-icon.home-button {
+    color: var(--interactive-normal);
+}
+
+.server-icon.home-button:hover {
+    color: white;
+}
+
+.server-emoji {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.server-initial {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.server-icon:hover .server-initial,
+.server-icon.active .server-initial {
+    color: white;
+}
+
+.server-icon.add-server {
+    color: var(--status-positive);
+    background-color: var(--bg-primary);
+}
+
+.server-icon.add-server:hover {
+    background-color: var(--status-positive);
+    color: white;
+}
+
+.server-icon.explore-button {
+    color: var(--status-positive);
+    background-color: var(--bg-primary);
+}
+
+.server-icon.explore-button:hover {
+    background-color: var(--status-positive);
+    color: white;
+}
+
+.server-icon.download-button {
+    color: var(--status-positive);
+    background-color: var(--bg-primary);
+}
+
+.server-icon.download-button:hover {
+    background-color: var(--status-positive);
+    color: white;
+}
+
+/* Pill Indicator */
+.pill-indicator {
+    position: absolute;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background-color: var(--header-primary);
+    border-radius: 0 4px 4px 0;
+    transition: height var(--transition-normal);
+}
+
+.server-sidebar-item:hover .pill-indicator {
+    height: 20px;
+}
+
+.server-sidebar-item.active .pill-indicator,
+.pill-indicator.active {
+    height: 40px;
+}
+
+/* Divider */
+.server-sidebar-divider {
+    width: 32px;
+    height: 2px;
+    background-color: var(--divider-color);
+    border-radius: 1px;
+    margin: 4px 0;
+}
+
+/* Server List */
+.server-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}

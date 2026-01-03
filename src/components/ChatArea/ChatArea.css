@@ -1,0 +1,245 @@
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary);
+    min-width: 0;
+}
+
+.chat-area.empty {
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.empty-state svg {
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    color: var(--header-primary);
+    margin-bottom: 8px;
+}
+
+/* Chat Header */
+.chat-header {
+    height: 48px;
+    min-height: 48px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--bg-tertiary);
+    box-shadow: var(--elevation-low);
+}
+
+.chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.header-hash {
+    color: var(--channel-icon);
+    flex-shrink: 0;
+}
+
+.header-channel-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--header-primary);
+    white-space: nowrap;
+}
+
+.header-divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--divider-color);
+    margin: 0 8px;
+}
+
+.header-topic {
+    color: var(--text-muted);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.header-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--interactive-normal);
+    transition: color var(--transition-fast);
+}
+
+.header-icon-btn:hover {
+    color: var(--interactive-hover);
+}
+
+.header-icon-btn.active {
+    color: var(--interactive-active);
+}
+
+.header-search {
+    position: relative;
+    margin: 0 8px;
+}
+
+.header-search input {
+    width: 144px;
+    height: 24px;
+    padding: 0 8px;
+    padding-right: 28px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-normal);
+    transition: width var(--transition-normal);
+}
+
+.header-search input::placeholder {
+    color: var(--text-muted);
+}
+
+.header-search input:focus {
+    width: 240px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Messages Container */
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.messages-scroller {
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Channel Welcome */
+.channel-welcome {
+    padding: 16px 0;
+    margin-bottom: 16px;
+    margin-top: auto;
+}
+
+.welcome-icon {
+    width: 68px;
+    height: 68px;
+    background-color: var(--bg-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    color: var(--text-normal);
+}
+
+.channel-welcome h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--header-primary);
+    margin-bottom: 8px;
+}
+
+.channel-welcome p {
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+/* Message Input */
+.message-input-container {
+    padding: 0 16px 24px;
+}
+
+.message-input-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: var(--channel-text-area);
+    border-radius: var(--radius-md);
+    padding: 0 16px;
+}
+
+.input-icon-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--interactive-normal);
+    flex-shrink: 0;
+    transition: color var(--transition-fast);
+}
+
+.input-icon-btn:hover {
+    color: var(--interactive-hover);
+}
+
+.input-field {
+    flex: 1;
+    padding: 11px 0;
+}
+
+.input-field input {
+    width: 100%;
+    font-size: 16px;
+    color: var(--text-normal);
+    background: transparent;
+}
+
+.input-field input::placeholder {
+    color: var(--text-muted);
+}
+
+.input-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.send-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--brand-primary);
+    color: white;
+    border-radius: var(--radius-sm);
+    margin-left: 8px;
+    transition: background-color var(--transition-fast);
+    animation: scaleIn var(--transition-fast);
+}
+
+.send-btn:hover {
+    background-color: var(--brand-primary-hover);
+}
