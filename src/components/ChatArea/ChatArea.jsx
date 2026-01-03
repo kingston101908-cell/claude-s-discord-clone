@@ -5,6 +5,11 @@ import UserProfileModal from '../UserProfileModal/UserProfileModal'
 import { Hash, Users, Bell, Pin, Search, Inbox, HelpCircle, PlusCircle, Gift, ImagePlus, Smile, Send } from 'lucide-react'
 import './ChatArea.css'
 
+// Constants for anti-spam
+const MAX_MESSAGE_LENGTH = 2000
+const RATE_LIMIT_MESSAGES = 3
+const RATE_LIMIT_WINDOW_MS = 5000 // 5 seconds
+
 function QuestionCircle(props) {
     return <HelpCircle {...props} />
 }
@@ -20,18 +25,58 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
 
     const [messageInput, setMessageInput] = useState('')
     const [selectedAuthor, setSelectedAuthor] = useState(null)
+    const [rateLimitError, setRateLimitError] = useState(null)
     const messagesEndRef = useRef(null)
+    const recentMessagesRef = useRef([]) // Track recent message timestamps
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [activeMessages])
 
-    const handleSendMessage = () => {
-        if (messageInput.trim() && activeChannelId) {
-            sendMessage(activeChannelId, messageInput.trim())
-            setMessageInput('')
+    // Clear rate limit error after 3 seconds
+    useEffect(() => {
+        if (rateLimitError) {
+            const timer = setTimeout(() => setRateLimitError(null), 3000)
+            return () => clearTimeout(timer)
         }
+    }, [rateLimitError])
+
+    const checkRateLimit = () => {
+        const now = Date.now()
+        // Filter messages within the rate limit window
+        recentMessagesRef.current = recentMessagesRef.current.filter(
+            timestamp => now - timestamp < RATE_LIMIT_WINDOW_MS
+        )
+
+        if (recentMessagesRef.current.length >= RATE_LIMIT_MESSAGES) {
+            return false // Rate limited
+        }
+
+        recentMessagesRef.current.push(now)
+        return true
+    }
+
+    const handleSendMessage = () => {
+        const trimmedMessage = messageInput.trim()
+
+        if (!trimmedMessage || !activeChannelId) return
+
+        // Check message length
+        if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+            setRateLimitError(`Message too long! Max ${MAX_MESSAGE_LENGTH} characters.`)
+            return
+        }
+
+        // Check rate limit
+        if (!checkRateLimit()) {
+            setRateLimitError('Slow down! You can only send 3 messages every 5 seconds.')
+            return
+        }
+
+        sendMessage(activeChannelId, trimmedMessage)
+        setMessageInput('')
+        setRateLimitError(null)
     }
 
     const handleKeyDown = (e) => {
@@ -43,6 +88,12 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
 
     const handleAuthorClick = (author) => {
         setSelectedAuthor(author)
+    }
+
+    const handleInputChange = (e) => {
+        const value = e.target.value
+        // Allow typing but show warning if over limit
+        setMessageInput(value)
     }
 
     if (!activeChannel) {
@@ -70,6 +121,8 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
     }
 
     const memberCount = activeServer?.members?.length || 0
+    const isOverLimit = messageInput.length > MAX_MESSAGE_LENGTH
+    const charCount = messageInput.length
 
     return (
         <main className="chat-area">
@@ -135,7 +188,13 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
 
             {/* Message Input */}
             <div className="chat-input-container">
-                <div className="chat-input-wrapper">
+                {rateLimitError && (
+                    <div className="rate-limit-error">
+                        ⚠️ {rateLimitError}
+                    </div>
+                )}
+
+                <div className={`chat-input-wrapper ${isOverLimit ? 'over-limit' : ''}`}>
                     <button className="input-icon-btn" title="Upload files">
                         <PlusCircle size={24} />
                     </button>
@@ -143,12 +202,18 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                     <input
                         type="text"
                         value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
+                        onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder={`Message #${activeChannel.name}`}
+                        maxLength={MAX_MESSAGE_LENGTH + 100} // Allow some overflow for feedback
                     />
 
                     <div className="input-actions">
+                        {charCount > MAX_MESSAGE_LENGTH - 200 && (
+                            <span className={`char-counter ${isOverLimit ? 'over' : ''}`}>
+                                {charCount}/{MAX_MESSAGE_LENGTH}
+                            </span>
+                        )}
                         <button className="input-icon-btn" title="Gift Nitro">
                             <Gift size={24} />
                         </button>
@@ -162,7 +227,7 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                             className="input-icon-btn send-btn"
                             title="Send"
                             onClick={handleSendMessage}
-                            disabled={!messageInput.trim()}
+                            disabled={!messageInput.trim() || isOverLimit}
                         >
                             <Send size={24} />
                         </button>

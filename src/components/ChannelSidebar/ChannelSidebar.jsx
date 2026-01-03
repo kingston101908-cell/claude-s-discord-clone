@@ -183,6 +183,7 @@ function ChannelSidebar({ onAddChannel }) {
                     username={currentUser?.username}
                     photoURL={currentUser?.photoURL}
                     onClose={() => setShowProfileModal(false)}
+                    isOwnProfile={true}
                 />
             )}
         </>

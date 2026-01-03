@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react';
-import { getUserProfile } from '../../supabase/database';
-import { X } from 'lucide-react';
+import { getUserProfile, upsertUserProfile } from '../../supabase/database';
+import { X, Camera } from 'lucide-react';
 import './UserProfileModal.css';
 
-function UserProfileModal({ userId, username, photoURL, onClose }) {
+function UserProfileModal({ userId, username, photoURL, onClose, isOwnProfile = false }) {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [editing, setEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [editForm, setEditForm] = useState({
+        bio: '',
+        banner_url: ''
+    });
 
     useEffect(() => {
         async function loadProfile() {
             const data = await getUserProfile(userId);
             setProfile(data);
+            if (data) {
+                setEditForm({
+                    bio: data.bio || '',
+                    banner_url: data.banner_url || ''
+                });
+            }
             setLoading(false);
         }
         loadProfile();
@@ -28,9 +40,31 @@ function UserProfileModal({ userId, username, photoURL, onClose }) {
     const userColor = getUserColor(username);
 
     // Default banner gradient based on user color
-    const bannerStyle = profile?.banner_url
-        ? { backgroundImage: `url(${profile.banner_url})` }
+    const bannerStyle = (editing ? editForm.banner_url : profile?.banner_url)
+        ? { backgroundImage: `url(${editing ? editForm.banner_url : profile.banner_url})` }
         : { background: `linear-gradient(135deg, ${userColor}, #1a1a2e)` };
+
+    const handleSave = async () => {
+        setSaving(true);
+        const success = await upsertUserProfile(userId, {
+            username: username,
+            bio: editForm.bio,
+            banner_url: editForm.banner_url
+        });
+
+        if (success) {
+            setProfile({
+                ...profile,
+                bio: editForm.bio,
+                banner_url: editForm.banner_url
+            });
+            setEditing(false);
+        }
+        setSaving(false);
+    };
+
+    // Check if viewing own profile
+    const canEdit = isOwnProfile;
 
     return (
         <div className="profile-modal-overlay" onClick={onClose}>
@@ -40,7 +74,20 @@ function UserProfileModal({ userId, username, photoURL, onClose }) {
                 </button>
 
                 {/* Banner */}
-                <div className="profile-banner" style={bannerStyle}></div>
+                <div className="profile-banner" style={bannerStyle}>
+                    {editing && (
+                        <div className="banner-edit-overlay">
+                            <Camera size={24} />
+                            <input
+                                type="text"
+                                placeholder="Paste banner image URL..."
+                                value={editForm.banner_url}
+                                onChange={(e) => setEditForm({ ...editForm, banner_url: e.target.value })}
+                                className="banner-url-input"
+                            />
+                        </div>
+                    )}
+                </div>
 
                 {/* Avatar */}
                 <div className="profile-avatar-container">
@@ -68,15 +115,46 @@ function UserProfileModal({ userId, username, photoURL, onClose }) {
 
                     {loading ? (
                         <div className="profile-loading">Loading profile...</div>
+                    ) : editing ? (
+                        <>
+                            {/* Edit Mode */}
+                            <div className="profile-section">
+                                <h3>ABOUT ME</h3>
+                                <textarea
+                                    value={editForm.bio}
+                                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                                    placeholder="Tell us about yourself..."
+                                    className="profile-bio-input"
+                                    maxLength={190}
+                                    rows={4}
+                                />
+                                <div className="char-count">{editForm.bio.length}/190</div>
+                            </div>
+
+                            <div className="profile-actions">
+                                <button
+                                    className="profile-action-btn primary"
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                >
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                                <button
+                                    className="profile-action-btn secondary"
+                                    onClick={() => setEditing(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </>
                     ) : (
                         <>
-                            {/* About Me Section */}
+                            {/* View Mode */}
                             <div className="profile-section">
                                 <h3>ABOUT ME</h3>
                                 <p>{profile?.bio || 'No bio set.'}</p>
                             </div>
 
-                            {/* Member Since */}
                             <div className="profile-section">
                                 <h3>DISCORD MEMBER SINCE</h3>
                                 <p>{profile?.created_at
@@ -89,23 +167,25 @@ function UserProfileModal({ userId, username, photoURL, onClose }) {
                                 }</p>
                             </div>
 
-                            {/* Note Section */}
-                            <div className="profile-section">
-                                <h3>NOTE</h3>
-                                <input
-                                    type="text"
-                                    placeholder="Click to add a note"
-                                    className="profile-note-input"
-                                />
-                            </div>
+                            {canEdit && (
+                                <div className="profile-actions">
+                                    <button
+                                        className="profile-action-btn primary"
+                                        onClick={() => setEditing(true)}
+                                    >
+                                        Edit Profile
+                                    </button>
+                                </div>
+                            )}
+
+                            {!canEdit && (
+                                <div className="profile-actions">
+                                    <button className="profile-action-btn primary">Send Message</button>
+                                    <button className="profile-action-btn secondary">Add Friend</button>
+                                </div>
+                            )}
                         </>
                     )}
-
-                    {/* Actions */}
-                    <div className="profile-actions">
-                        <button className="profile-action-btn primary">Send Message</button>
-                        <button className="profile-action-btn secondary">Add Friend</button>
-                    </div>
                 </div>
             </div>
         </div>

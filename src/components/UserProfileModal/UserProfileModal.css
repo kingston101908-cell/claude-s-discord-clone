@@ -45,6 +45,33 @@
     height: 120px;
     background-size: cover;
     background-position: center;
+    position: relative;
+}
+
+.banner-edit-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: white;
+}
+
+.banner-url-input {
+    width: 80%;
+    padding: 8px 12px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-normal);
+    text-align: center;
+}
+
+.banner-url-input::placeholder {
+    color: var(--text-muted);
 }
 
 /* Avatar */
@@ -145,6 +172,28 @@
     line-height: 1.4;
 }
 
+.profile-bio-input {
+    width: 100%;
+    padding: 8px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-normal);
+    resize: none;
+    font-family: inherit;
+}
+
+.profile-bio-input::placeholder {
+    color: var(--text-muted);
+}
+
+.char-count {
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
 .profile-note-input {
     width: 100%;
     padding: 8px;
@@ -180,8 +229,13 @@
     color: white;
 }
 
-.profile-action-btn.primary:hover {
+.profile-action-btn.primary:hover:not(:disabled) {
     background-color: var(--brand-primary-hover);
+}
+
+.profile-action-btn.primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .profile-action-btn.secondary {
