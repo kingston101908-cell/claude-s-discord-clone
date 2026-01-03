@@ -16,6 +16,7 @@
     align-items: center;
     border-bottom: 1px solid var(--bg-tertiary);
     box-shadow: var(--elevation-low);
+    position: relative;
 }
 
 .channel-header-button {
@@ -30,7 +31,8 @@
     transition: color var(--transition-fast);
 }
 
-.channel-header-button:hover {
+.channel-header-button:hover,
+.channel-header-button.active {
     color: var(--interactive-hover);
 }
 
@@ -40,6 +42,51 @@
     white-space: nowrap;
     flex: 1;
     text-align: left;
+}
+
+/* Server Dropdown Menu */
+.server-menu {
+    position: absolute;
+    top: 100%;
+    left: 8px;
+    right: 8px;
+    margin-top: 4px;
+    background-color: var(--bg-floating);
+    border-radius: var(--radius-sm);
+    padding: 6px;
+    box-shadow: var(--elevation-high);
+    z-index: 100;
+    animation: scaleIn var(--transition-fast);
+}
+
+.server-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-normal);
+    font-size: 14px;
+    text-align: left;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.server-menu-item:hover {
+    background-color: var(--brand-primary);
+    color: white;
+}
+
+.server-menu-divider {
+    height: 1px;
+    background-color: var(--divider-color);
+    margin: 6px 0;
+}
+
+.server-menu-info {
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
 /* Invite Banner */
@@ -313,4 +360,13 @@
 .user-action-btn:hover {
     background-color: var(--bg-modifier-hover);
     color: var(--interactive-hover);
+}
+
+.user-action-btn.active {
+    background-color: var(--bg-modifier-selected);
+    color: var(--interactive-active);
+}
+
+.user-action-btn.active.danger {
+    color: var(--status-danger);
 }

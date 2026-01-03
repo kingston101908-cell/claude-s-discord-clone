@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { signOut } from '../../supabase/auth';
-import { Hash, Plus, ChevronDown, Mic, Headphones, LogOut, UserPlus } from 'lucide-react';
+import { Hash, Plus, ChevronDown, Mic, MicOff, Headphones, Volume2, VolumeX, LogOut, UserPlus, Settings, X } from 'lucide-react';
 import InviteModal from '../InviteModal/InviteModal';
+import UserProfileModal from '../UserProfileModal/UserProfileModal';
 import './ChannelSidebar.css';
 
 function ChannelSidebar({ onAddChannel }) {
@@ -15,6 +16,10 @@ function ChannelSidebar({ onAddChannel }) {
     } = useApp();
 
     const [showInviteModal, setShowInviteModal] = useState(false);
+    const [showServerMenu, setShowServerMenu] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isDeafened, setIsDeafened] = useState(false);
 
     if (!activeServer) return null;
 
@@ -30,6 +35,17 @@ function ChannelSidebar({ onAddChannel }) {
         await signOut();
     };
 
+    const toggleMute = () => {
+        setIsMuted(!isMuted);
+    };
+
+    const toggleDeafen = () => {
+        if (!isDeafened) {
+            setIsMuted(true); // Deafening also mutes
+        }
+        setIsDeafened(!isDeafened);
+    };
+
     const memberCount = activeServer.members?.length || 1;
 
     return (
@@ -37,10 +53,34 @@ function ChannelSidebar({ onAddChannel }) {
             <div className="channel-sidebar">
                 {/* Server Header */}
                 <div className="channel-header">
-                    <button className="channel-header-button">
+                    <button
+                        className={`channel-header-button ${showServerMenu ? 'active' : ''}`}
+                        onClick={() => setShowServerMenu(!showServerMenu)}
+                    >
                         <span className="server-name">{activeServer.name}</span>
-                        <ChevronDown size={18} />
+                        {showServerMenu ? <X size={18} /> : <ChevronDown size={18} />}
                     </button>
+
+                    {/* Server Dropdown Menu */}
+                    {showServerMenu && (
+                        <div className="server-menu">
+                            <button className="server-menu-item" onClick={() => {
+                                setShowInviteModal(true);
+                                setShowServerMenu(false);
+                            }}>
+                                <UserPlus size={18} />
+                                <span>Invite People</span>
+                            </button>
+                            <button className="server-menu-item" onClick={() => setShowServerMenu(false)}>
+                                <Settings size={18} />
+                                <span>Server Settings</span>
+                            </button>
+                            <div className="server-menu-divider"></div>
+                            <div className="server-menu-info">
+                                <span>Members: {memberCount}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Invite Banner */}
@@ -92,7 +132,7 @@ function ChannelSidebar({ onAddChannel }) {
 
                 {/* User Panel */}
                 <div className="user-panel">
-                    <div className="user-info">
+                    <div className="user-info" onClick={() => setShowProfileModal(true)}>
                         <div className="user-avatar">
                             {currentUser?.photoURL ? (
                                 <img src={currentUser.photoURL} alt={currentUser.username} className="avatar-image-img" />
@@ -109,11 +149,19 @@ function ChannelSidebar({ onAddChannel }) {
                         </div>
                     </div>
                     <div className="user-actions">
-                        <button className="user-action-btn" title="Mute">
-                            <Mic size={20} />
+                        <button
+                            className={`user-action-btn ${isMuted ? 'active danger' : ''}`}
+                            title={isMuted ? "Unmute" : "Mute"}
+                            onClick={toggleMute}
+                        >
+                            {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
                         </button>
-                        <button className="user-action-btn" title="Deafen">
-                            <Headphones size={20} />
+                        <button
+                            className={`user-action-btn ${isDeafened ? 'active danger' : ''}`}
+                            title={isDeafened ? "Undeafen" : "Deafen"}
+                            onClick={toggleDeafen}
+                        >
+                            {isDeafened ? <VolumeX size={20} /> : <Headphones size={20} />}
                         </button>
                         <button className="user-action-btn" title="Sign Out" onClick={handleSignOut}>
                             <LogOut size={20} />
@@ -126,6 +174,15 @@ function ChannelSidebar({ onAddChannel }) {
                 <InviteModal
                     server={activeServer}
                     onClose={() => setShowInviteModal(false)}
+                />
+            )}
+
+            {showProfileModal && (
+                <UserProfileModal
+                    userId={currentUser?.id}
+                    username={currentUser?.username}
+                    photoURL={currentUser?.photoURL}
+                    onClose={() => setShowProfileModal(false)}
                 />
             )}
         </>
