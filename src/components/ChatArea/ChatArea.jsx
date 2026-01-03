@@ -2,7 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../../context/AppContext'
 import Message from '../Message/Message'
 import UserProfileModal from '../UserProfileModal/UserProfileModal'
-import { Hash, Users, Bell, Pin, Search, Inbox, HelpCircle, PlusCircle, Gift, ImagePlus, Smile, Send } from 'lucide-react'
+import TypingIndicator from '../TypingIndicator/TypingIndicator'
+import {
+    subscribeToTyping,
+    broadcastTyping,
+    uploadFile
+} from '../../supabase/database'
+import { Hash, Users, Bell, Pin, Search, Inbox, HelpCircle, PlusCircle, Gift, ImagePlus, Smile, Send, Menu } from 'lucide-react'
 import './ChatArea.css'
 
 // Constants for anti-spam
@@ -14,20 +20,40 @@ function QuestionCircle(props) {
     return <HelpCircle {...props} />
 }
 
-function ChatArea({ onToggleMemberList, showMemberList }) {
+function ChatArea({ onToggleMemberList, showMemberList, onToggleMobileMenu }) {
     const {
         activeChannel,
         activeChannelId,
         activeServer,
         activeMessages,
-        sendMessage
+        sendMessage,
+        user,
+        currentUser
     } = useApp()
 
     const [messageInput, setMessageInput] = useState('')
     const [selectedAuthor, setSelectedAuthor] = useState(null)
     const [rateLimitError, setRateLimitError] = useState(null)
+    const [typingUsers, setTypingUsers] = useState([])
+    const [isUploading, setIsUploading] = useState(false)
     const messagesEndRef = useRef(null)
     const recentMessagesRef = useRef([]) // Track recent message timestamps
+    const typingChannelRef = useRef(null)
+    const fileInputRef = useRef(null)
+
+    // Subscribe to typing indicators
+    useEffect(() => {
+        if (!activeChannelId || !user?.id) return;
+
+        const channel = subscribeToTyping(activeChannelId, user.id, setTypingUsers);
+        typingChannelRef.current = channel;
+
+        return () => {
+            if (typingChannelRef.current) {
+                typingChannelRef.current.unsubscribe();
+            }
+        };
+    }, [activeChannelId, user?.id]);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -57,7 +83,7 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
         return true
     }
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         const trimmedMessage = messageInput.trim()
 
         if (!trimmedMessage || !activeChannelId) return
@@ -92,9 +118,40 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
 
     const handleInputChange = (e) => {
         const value = e.target.value
-        // Allow typing but show warning if over limit
         setMessageInput(value)
+
+        // Broadcast typing
+        if (typingChannelRef.current && value.length > 0) {
+            broadcastTyping(typingChannelRef.current, user?.id, currentUser?.username);
+        }
     }
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const result = await uploadFile(file, user?.id);
+        setIsUploading(false);
+
+        if (result.success) {
+            // Send message with attachment
+            const attachmentMessage = file.type.startsWith('image/')
+                ? `![${file.name}](${result.url})`
+                : `[📎 ${file.name}](${result.url})`;
+
+            await sendMessage(activeChannelId, attachmentMessage, [{
+                url: result.url,
+                name: file.name,
+                type: file.type,
+                size: file.size
+            }]);
+        } else {
+            setRateLimitError('Failed to upload file: ' + result.error);
+        }
+
+        e.target.value = '';
+    };
 
     if (!activeChannel) {
         return (
@@ -129,6 +186,9 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
             {/* Channel Header */}
             <header className="chat-header">
                 <div className="header-left">
+                    <button className="mobile-menu-btn" onClick={onToggleMobileMenu}>
+                        <Menu size={20} />
+                    </button>
                     <Hash size={24} className="header-hash" />
                     <h2 className="header-title">{activeChannel.name}</h2>
                 </div>
@@ -181,8 +241,15 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                         message={message}
                         showHeader={shouldShowHeader(message, index)}
                         onAuthorClick={() => handleAuthorClick(message.author)}
+                        serverId={activeServer?.id}
                     />
                 ))}
+
+                {/* Typing Indicator */}
+                {typingUsers.length > 0 && (
+                    <TypingIndicator users={typingUsers} />
+                )}
+
                 <div ref={messagesEndRef} />
             </div>
 
@@ -194,10 +261,28 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                     </div>
                 )}
 
+                {isUploading && (
+                    <div className="upload-progress-bar">
+                        Uploading file...
+                    </div>
+                )}
+
                 <div className={`chat-input-wrapper ${isOverLimit ? 'over-limit' : ''}`}>
-                    <button className="input-icon-btn" title="Upload files">
+                    <button
+                        className="input-icon-btn"
+                        title="Upload files"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                    >
                         <PlusCircle size={24} />
                     </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        hidden
+                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip"
+                    />
 
                     <input
                         type="text"
@@ -206,6 +291,7 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                         onKeyDown={handleKeyDown}
                         placeholder={`Message #${activeChannel.name}`}
                         maxLength={MAX_MESSAGE_LENGTH + 100} // Allow some overflow for feedback
+                        disabled={isUploading}
                     />
 
                     <div className="input-actions">
@@ -217,7 +303,11 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                         <button className="input-icon-btn" title="Gift Nitro">
                             <Gift size={24} />
                         </button>
-                        <button className="input-icon-btn" title="Upload Image">
+                        <button
+                            className="input-icon-btn"
+                            title="Upload Image"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
                             <ImagePlus size={24} />
                         </button>
                         <button className="input-icon-btn" title="Emoji">
@@ -227,7 +317,7 @@ function ChatArea({ onToggleMemberList, showMemberList }) {
                             className="input-icon-btn send-btn"
                             title="Send"
                             onClick={handleSendMessage}
-                            disabled={!messageInput.trim() || isOverLimit}
+                            disabled={!messageInput.trim() || isOverLimit || isUploading}
                         >
                             <Send size={24} />
                         </button>

@@ -143,3 +143,37 @@
     gap: 8px;
     flex: 1;
 }
+
+/* Unread Badge */
+.unread-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background-color: var(--status-danger);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-tertiary);
+    animation: scaleIn 0.2s ease;
+}
+
+.dm-badge {
+    bottom: -4px;
+    right: -4px;
+}
+
+.server-sidebar-item.has-unread .pill-indicator {
+    height: 8px;
+    background-color: var(--header-primary);
+}
+
+.server-icon {
+    position: relative;
+}

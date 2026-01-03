@@ -7,13 +7,28 @@ import ChatArea from './components/ChatArea/ChatArea'
 import MemberList from './components/MemberList/MemberList'
 import Modal from './components/Modal/Modal'
 import JoinServer from './components/JoinServer/JoinServer'
+import DMSidebar from './components/DMSidebar/DMSidebar'
+import DMChatArea from './components/DMChatArea/DMChatArea'
 import './App.css'
 
 function App() {
-  const { user, authLoading, activeServer, selectServer } = useApp()
+  const {
+    user,
+    authLoading,
+    activeServer,
+    selectServer,
+    viewMode,
+    setViewMode,
+    dmConversations,
+    dmUnreadCounts
+  } = useApp()
+
   const [showMemberList, setShowMemberList] = useState(true)
   const [modalConfig, setModalConfig] = useState(null)
   const [inviteCode, setInviteCode] = useState(null)
+  const [activeDMConversation, setActiveDMConversation] = useState(null)
+  const [activeDMUser, setActiveDMUser] = useState(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Check for invite code in URL on mount and when user changes
   useEffect(() => {
@@ -56,6 +71,30 @@ function App() {
     window.history.pushState({}, '', '/')
   }
 
+  const handleOpenDMs = () => {
+    setViewMode('dm')
+    setMobileMenuOpen(false)
+  }
+
+  const handleSelectServer = (serverId) => {
+    selectServer(serverId)
+    setViewMode('server')
+    setActiveDMConversation(null)
+    setActiveDMUser(null)
+    setMobileMenuOpen(false)
+  }
+
+  const handleSelectDMConversation = (conversation, otherUser) => {
+    setActiveDMConversation(conversation)
+    setActiveDMUser(otherUser)
+    setMobileMenuOpen(false)
+  }
+
+  const handleBackFromDM = () => {
+    setActiveDMConversation(null)
+    setActiveDMUser(null)
+  }
+
   // Show loading state
   if (authLoading) {
     return (
@@ -85,17 +124,48 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <ServerSidebar onAddServer={() => openModal({ type: 'server' })} />
+    <div className={`app ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />
+      )}
 
-      {activeServer ? (
+      <ServerSidebar
+        onAddServer={() => openModal({ type: 'server' })}
+        onOpenDMs={handleOpenDMs}
+        onSelectServer={handleSelectServer}
+        isInDMView={viewMode === 'dm'}
+      />
+
+      {viewMode === 'dm' ? (
+        // DM View
         <>
-          <ChannelSidebar
-            onAddChannel={() => openModal({ type: 'channel' })}
+          <div className={`sidebar-container ${mobileMenuOpen ? 'show' : ''}`}>
+            <DMSidebar
+              conversations={dmConversations}
+              unreadCounts={dmUnreadCounts}
+              activeConversationId={activeDMConversation?.id}
+              onSelectConversation={handleSelectDMConversation}
+            />
+          </div>
+          <DMChatArea
+            conversation={activeDMConversation}
+            otherUser={activeDMUser}
+            onBack={handleBackFromDM}
           />
+        </>
+      ) : activeServer ? (
+        // Server View
+        <>
+          <div className={`sidebar-container ${mobileMenuOpen ? 'show' : ''}`}>
+            <ChannelSidebar
+              onAddChannel={() => openModal({ type: 'channel' })}
+            />
+          </div>
           <ChatArea
             onToggleMemberList={() => setShowMemberList(!showMemberList)}
             showMemberList={showMemberList}
+            onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           />
           {showMemberList && <MemberList />}
         </>

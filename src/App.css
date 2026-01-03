@@ -81,3 +81,79 @@
   background-color: var(--brand-primary-hover);
   transform: translateY(-1px);
 }
+
+/* Sidebar container for responsive layout */
+.sidebar-container {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  display: none;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .sidebar-container {
+    position: fixed;
+    left: var(--server-sidebar-width);
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-container.show {
+    transform: translateX(0);
+  }
+
+  .mobile-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    color: var(--interactive-normal);
+    margin-right: 8px;
+  }
+
+  .mobile-menu-btn:hover {
+    color: var(--interactive-hover);
+    background-color: var(--bg-modifier-hover);
+  }
+
+  /* Hide member list on mobile by default */
+  .member-list {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .server-sidebar {
+    width: 60px;
+  }
+
+  :root {
+    --server-sidebar-width: 60px;
+  }
+}

@@ -98,6 +98,13 @@
     white-space: pre-wrap;
 }
 
+/* Edited indicator */
+.edited-indicator {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
 /* Compact timestamp on hover */
 .message-timestamp-hover {
     position: absolute;
@@ -116,13 +123,205 @@
     opacity: 1;
 }
 
-/* Message actions on hover (placeholder) */
-.message:hover::after {
-    content: '';
+/* Message Actions */
+.message-actions {
     position: absolute;
     top: -16px;
     right: 16px;
-    width: 100px;
+    display: flex;
+    gap: 0;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--elevation-medium);
+    overflow: hidden;
+    animation: fadeIn 0.1s ease;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
     height: 32px;
-    /* This would contain action buttons */
+    color: var(--interactive-normal);
+    transition: all var(--transition-fast);
+}
+
+.action-btn:hover {
+    color: var(--interactive-hover);
+    background-color: var(--bg-modifier-hover);
+}
+
+.action-btn.delete:hover {
+    color: var(--status-danger);
+}
+
+/* Reaction Picker */
+.reaction-picker {
+    position: absolute;
+    top: -44px;
+    right: 16px;
+    display: flex;
+    gap: 2px;
+    background-color: var(--bg-floating);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    box-shadow: var(--elevation-high);
+    animation: scaleIn 0.1s ease;
+    z-index: 10;
+}
+
+.reaction-picker button {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.reaction-picker button:hover {
+    background-color: var(--bg-modifier-hover);
+    transform: scale(1.2);
+}
+
+/* Message Reactions */
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.reaction-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    transition: all var(--transition-fast);
+}
+
+.reaction-badge:hover {
+    background-color: var(--bg-modifier-hover);
+}
+
+.reaction-badge.user-reacted {
+    background-color: rgba(88, 101, 242, 0.15);
+    border-color: var(--brand-primary);
+}
+
+.reaction-emoji {
+    font-size: 16px;
+}
+
+.reaction-count {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Message Error */
+.message-error {
+    position: absolute;
+    top: -24px;
+    left: 72px;
+    right: 16px;
+    padding: 4px 8px;
+    background-color: rgba(242, 63, 67, 0.1);
+    border: 1px solid var(--status-danger);
+    border-radius: var(--radius-sm);
+    color: var(--status-danger);
+    font-size: 12px;
+    animation: fadeIn 0.2s ease;
+}
+
+/* Edit Input */
+.edit-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    margin-top: 4px;
+}
+
+.edit-input-container input {
+    flex: 1;
+    padding: 4px;
+    background: transparent;
+    color: var(--text-normal);
+    font-size: 16px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.edit-save,
+.edit-cancel {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.edit-save {
+    color: var(--status-positive);
+}
+
+.edit-save:hover {
+    background-color: rgba(35, 165, 90, 0.2);
+}
+
+.edit-cancel {
+    color: var(--status-danger);
+}
+
+.edit-cancel:hover {
+    background-color: rgba(242, 63, 67, 0.2);
+}
+
+/* Attachments */
+.message-attachments {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.attachment-image {
+    max-width: 400px;
+    max-height: 300px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.attachment-image:hover {
+    transform: scale(1.02);
+}
+
+.attachment-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    color: var(--text-link);
+    font-size: 14px;
+    transition: background-color var(--transition-fast);
+}
+
+.attachment-file:hover {
+    background-color: var(--bg-modifier-hover);
+    text-decoration: none;
 }

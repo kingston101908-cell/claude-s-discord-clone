@@ -370,3 +370,42 @@
 .user-action-btn.active.danger {
     color: var(--status-danger);
 }
+
+/* Channel Unread Badge */
+.channel-unread-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background-color: var(--status-danger);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.channel-item.has-unread .channel-name {
+    color: var(--header-primary);
+    font-weight: 600;
+}
+
+/* Error Banner */
+.channel-error-banner {
+    padding: 8px 12px;
+    margin: 8px;
+    background-color: rgba(242, 63, 67, 0.1);
+    border: 1px solid var(--status-danger);
+    border-radius: var(--radius-sm);
+    color: var(--status-danger);
+    font-size: 13px;
+    animation: shake 0.3s ease;
+}
+
+.no-permission-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
